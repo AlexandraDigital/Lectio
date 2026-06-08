@@ -608,6 +608,7 @@
     const todayKey = toDateKey(today);
     let entries = loadEntries();
     let activeMood = entries[todayKey]?.mood || "peaceful";
+    let editingDateKey = null;
 
     const weekday = document.getElementById("weekday");
     const todayTitle = document.getElementById("todayTitle");
@@ -698,6 +699,7 @@
       activeMood = entry.mood || activeMood;
       entryText.value = entry.entry || "";
       reflectionText.value = entry.reflection || "";
+      editingDateKey = null;
       renderMoodChips();
       renderAll();
     }
@@ -718,10 +720,11 @@
       });
     }
 
-    function saveToday() {
+    function saveEntry() {
+      const dateKeyToUpdate = editingDateKey || todayKey;
       const mood = moods.find((item) => item.key === activeMood) || moods[2];
-      entries[todayKey] = {
-        date: todayKey,
+      entries[dateKeyToUpdate] = {
+        date: dateKeyToUpdate,
         mood: mood.key,
         moodLabel: mood.label,
         moodEmoji: mood.emoji,
@@ -730,6 +733,7 @@
         savedAt: new Date().toISOString()
       };
       writeEntries();
+      editingDateKey = null;
       renderAll();
       saveButton.textContent = "Saved";
       saveButton.classList.add("saved");
@@ -744,14 +748,14 @@
     function editEntry(date) {
       const entry = entries[date];
       if (!entry) return;
+      editingDateKey = date;
       activeMood = entry.mood || "peaceful";
       entryText.value = entry.entry || "";
       reflectionText.value = entry.reflection || "";
       renderMoodChips();
       switchRoute("today");
-      saveStatus.textContent = date === todayKey
-        ? "Editing today's entry."
-        : "Loaded an older entry into the form. Saving will update today.";
+      const dateObj = keyToDate(date);
+      saveStatus.textContent = `Editing entry from ${formatDate(dateObj)}.`;
     }
 
     function deleteEntry(date) {
@@ -760,6 +764,7 @@
       if (date === todayKey) {
         entryText.value = "";
         reflectionText.value = "";
+        editingDateKey = null;
       }
       renderAll();
     }
@@ -895,7 +900,7 @@
       button.addEventListener("click", () => switchRoute(button.dataset.route));
     });
 
-    saveButton.addEventListener("click", saveToday);
+    saveButton.addEventListener("click", saveEntry);
 
     initDate();
     loadRandomVerse();
