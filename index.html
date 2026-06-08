@@ -523,8 +523,8 @@
         </div>
 
         <section class="panel verse-card" aria-label="Daily passage">
-          <p class="verse">"Trust in the Lord with all your heart, and do not lean on your own understanding. In all your ways acknowledge him, and he will make straight your paths."</p>
-          <p class="reference">Proverbs 3:5-6</p>
+          <p class="verse" id="verseText">"Trust in the Lord with all your heart, and do not lean on your own understanding. In all your ways acknowledge him, and he will make straight your paths."</p>
+          <p class="reference" id="verseReference">Proverbs 3:5-6</p>
         </section>
 
         <section class="panel form-grid" aria-label="Journal form">
@@ -624,6 +624,8 @@
     const distribution = document.getElementById("distribution");
     const arcEmpty = document.getElementById("arcEmpty");
     const arcSvg = document.getElementById("arcSvg");
+    const verseText = document.getElementById("verseText");
+    const verseReference = document.getElementById("verseReference");
 
     function toDateKey(date) {
       const year = date.getFullYear();
@@ -676,6 +678,19 @@
     function initDate() {
       weekday.textContent = today.toLocaleDateString(undefined, { weekday: "long" });
       todayTitle.textContent = formatDate(today);
+    }
+
+    async function loadRandomVerse() {
+      try {
+        const response = await fetch('verses.json');
+        const data = await response.json();
+        const verses = data.verses;
+        const randomVerse = verses[Math.floor(Math.random() * verses.length)];
+        verseText.textContent = `"${randomVerse.text}"`;
+        verseReference.textContent = randomVerse.reference;
+      } catch (error) {
+        console.error('Error loading verse:', error);
+      }
     }
 
     function initTodayEntry() {
@@ -883,6 +898,7 @@
     saveButton.addEventListener("click", saveToday);
 
     initDate();
+    loadRandomVerse();
     initTodayEntry();
   </script>
 </body>
